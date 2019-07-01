@@ -5,5 +5,5 @@ Webゲームアプリを共同開発するリポジトリです。
 ジャンル：話し合い中  
 リリース：2019年12月末  
 ## contributors
-@minmin0530
+@minmin0530  
 @intelfike
