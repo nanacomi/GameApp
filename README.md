@@ -6,4 +6,4 @@ Webゲームアプリを共同開発するリポジトリです。
 リリース：2019年12月末  
 ## contributors
 @minmin0530  
-@intelfike
+@intelfike  
