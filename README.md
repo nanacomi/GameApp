@@ -8,3 +8,4 @@ Webゲームアプリを共同開発するリポジトリです。
 @minmin0530  
 @intelfike  
 @kmms_eatr
+@nanacomi
