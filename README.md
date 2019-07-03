@@ -7,5 +7,5 @@ Webゲームアプリを共同開発するリポジトリです。
 ## contributors
 @minmin0530  
 @intelfike  
-@kmms_eatr
+@kmms_eatr  
 @nanacomi
