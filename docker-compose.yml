@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  client:
+    image: node:10.15.3-alpine
+    volumes:
+      - ./client:/src
+    working_dir: /src
+    command: [sh, -c, npm i -g gulp && npm i && gulp]
+    tty: true
+    ports:
+      - 3000:3000
+  
+  nginx:
+    image: nginx:1.16.0-alpine
+    ports:
+      - 80:80
+    privileged: true
+    volumes:
+      - ./client:/usr/share/nginx/html
+    depends_on:
+      - client
