@@ -1,0 +1,27 @@
+{
+  "name": "gameapp",
+  "version": "1.0.0",
+  "description": "やさしい会ゲーム共同開発",
+  "main": "./src/main.js",
+  "browserslist": [
+    "last 2 versions",
+    "ie >= 9",
+    "Android >= 4",
+    "ios_saf >= 8"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "babel-loader": "^8.0.6",
+    "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
+    "webpack": "^4.35.0",
+    "webpack-stream": "^5.2.1"
+  }
+}
