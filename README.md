@@ -1,9 +1,13 @@
 # GameApp
 Webゲームアプリを共同開発するリポジトリです。  
-## 現状
-人数：５人　増える予定  
-ジャンル：話し合い中  
+## 概要
+ジャンル：リアルタイムネットワークアクションゲーム  
 リリース：2019年12月末  
+サーバ側：Node.js  
+フロント側：three.js  
+通信：Socket.IO  
+開発環境：docker  
+本番環境：AWS  
 ## contributors
 @minmin0530  
 @intelfike  
