@@ -10,6 +10,18 @@ services:
     tty: true
     ports:
       - 3000:3000
+    depends_on:
+      - server
+  
+  server:
+    image: node:10.15.3-alpine
+    volumes:
+      - ./server:/src
+    working_dir: /src
+    command: [sh, -c, npm i -g nodemon && npm i && nodemon main.js]
+    tty: true
+    ports:
+      - 3001:3001
   
   nginx:
     image: nginx:1.16.0-alpine
@@ -20,3 +32,4 @@ services:
       - ./client:/usr/share/nginx/html
     depends_on:
       - client
+      - server

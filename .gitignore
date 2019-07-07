@@ -1,4 +1,4 @@
-client/node_modules
+node_modules
 # client/package-lock.json
 # client/bundle.js
 # client/bundle.js.map
