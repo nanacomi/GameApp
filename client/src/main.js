@@ -8,7 +8,7 @@ class GameApp {
 
         this.controller = controller;
 
-        this.socket = io('localhost:3001');
+        this.socket = io('/', {path: '/ws/socket.io'});
         
         this.cubes = [];
         this.players = new Map();
