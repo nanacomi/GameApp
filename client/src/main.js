@@ -1,4 +1,5 @@
 const MAX = 50;
+
 class GameApp {
     constructor(controller) {
         this.scene = new THREE.Scene();
@@ -6,8 +7,12 @@ class GameApp {
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
 
         this.controller = controller;
+
+        this.socket = io('/', {path: '/ws/socket.io'});
         
         this.cubes = [];
+        this.players = new Map();
+        this.id = Math.floor(Math.random() * 10000);
     }
 
     init() {
@@ -38,6 +43,57 @@ class GameApp {
         this.camera.position.set(50.0, 2.0, 50.0);
     }
 
+    connect() {
+        this.socket.emit('connected', {
+            id: this.id,
+            position: this.camera.position
+        });
+        
+        this.socket.on('disconnect', () => {});
+
+        this.socket.on('connected', data => {
+            if (data.newUser.id !== this.id) {
+                this.addUser(data.newUser);
+            } else {
+                data.currentUsers.forEach(user => {
+                    this.addUser(user);
+                }) 
+            }
+        });
+
+        this.socket.on('disconnected', data => {
+            let target = this.players.get(data);
+
+            this.scene.remove(target.mesh);
+            target.geometry.dispose();
+            target.material.dispose();
+
+            this.players.delete(data);
+        });
+
+        this.socket.on('updatePosition', data => {
+            if (data.id !== this.id) {
+                this.updatePosition(data);
+            }
+        });
+    }
+
+    addUser(data) {
+        let player = new Cube();
+        player.mesh.position.x = data.position.x;
+        player.mesh.position.y = data.position.y;
+        player.mesh.position.z = data.position.z;
+        this.scene.add(player.mesh);
+        this.players.set(data.id, player);
+    }
+
+    updatePosition(data) {
+        let target = this.players.get(data.id);
+        target.mesh.position.x = data.position.x;
+        target.mesh.position.y = data.position.y;
+        target.mesh.position.z = data.position.z;
+    }
+
     render() {
         this.renderer.render( this.scene, this.camera );
     }
@@ -66,9 +122,9 @@ class Controller {
 
 class Cube {
     constructor() {
-        const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        const material = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
-        this.mesh = new THREE.Mesh(geometry, material);
+        this.geometry = new THREE.BoxGeometry( 1, 1, 1 );
+        this.material = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
+        this.mesh = new THREE.Mesh(this.geometry, this.material);
     }
 }
 
@@ -77,23 +133,33 @@ function main() {
     const controller = new Controller;
     const app = new GameApp(controller);
     app.init();
+    app.connect();
     app.controller.handleKeyInput();
 
     loop();
 
     function loop() {
+        let prevPos = Object.assign({}, app.camera.position);
+
         if (app.controller.moveKeys.get(37)) { // Left
-            app.camera.position.x -= 0.1
+            app.camera.position.x -= 0.1;
         }
         if (app.controller.moveKeys.get(39)) { // Right
-            app.camera.position.x += 0.1
+            app.camera.position.x += 0.1;
         }
         if (app.controller.moveKeys.get(38)) { // Forward
-            app.camera.position.z -= 0.1
+            app.camera.position.z -= 0.1;
         }
         if (app.controller.moveKeys.get(40)) { // Back
-            app.camera.position.z += 0.1
+            app.camera.position.z += 0.1;
         }
+
+        if (JSON.stringify(app.camera.position) != JSON.stringify(prevPos)) {
+            app.socket.emit('updatePosition', {
+                id: app.id,
+                position: app.camera.position
+            })
+        };
 
         app.render();
         
