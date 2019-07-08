@@ -8,8 +8,6 @@ export default class Player {
     }
 
     update() {
-        this.prevPos = Object.assign({}, this.camera.position);
-
         this.target.x = Math.cos(Math.PI * this.angle / 180.0) + this.camera.position.x;
         this.target.z = Math.sin(Math.PI * this.angle / 180.0) + this.camera.position.z;
 

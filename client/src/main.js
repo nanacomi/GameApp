@@ -86,7 +86,6 @@ class GameApp {
     }
 
     render() {
-        this.player.update();
         this.renderer.render( this.scene, this.player.camera );
     }
 }
@@ -100,6 +99,8 @@ function main() {
     loop();
 
     function loop() {
+        app.player.prevPos = Object.assign({}, app.player.camera.position);
+        app.player.update();
         if (JSON.stringify(app.player.camera.position) != JSON.stringify(app.player.prevPos)) {
             app.socket.emit('updatePosition', {
                 id: app.id,
