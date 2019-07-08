@@ -3,7 +3,7 @@ import Cube from './cube';
 const MAX = 50;
 
 export default class Stage {
-    constructor(scene) {
+    init(scene) {
         this.cubes = [];
         for (let x = 0; x < MAX; ++x) {
             for (let z = 0; z < MAX; ++z) {

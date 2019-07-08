@@ -1,13 +1,15 @@
 import Stage from './stage';
 import Player from './player';
 import Cube from './cube';
+import Controller from './controller';
 
 class GameApp {
-    constructor() {
+    constructor(player) {
         this.scene = new THREE.Scene();
+        this.stage = new Stage();
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.socket = io('/', {path: '/ws/socket.io'});
-        this.player = new Player(this.scene);
+        this.player = player;
         this.players = new Map();
         this.id = Math.floor(Math.random() * 10000);
     }
@@ -17,7 +19,8 @@ class GameApp {
         this.renderer.setClearColor(0x888888, 1.0);
         document.body.appendChild( this.renderer.domElement );
 
-        new Stage(this.scene);
+        this.stage.init(this.scene);
+
         // 平行光源
         const directionalLight = new THREE.DirectionalLight(0xffffff);
         directionalLight.position.set(25, 1000, 25);
@@ -89,14 +92,14 @@ class GameApp {
 }
 
 function main() {
-    const app = new GameApp();
+    const app = new GameApp(new Player(new Controller));
     app.init();
+    app.scene.add(app.player.camera);
     app.connect();
 
     loop();
 
     function loop() {
-        
         if (JSON.stringify(app.player.camera.position) != JSON.stringify(app.player.prevPos)) {
             app.socket.emit('updatePosition', {
                 id: app.id,

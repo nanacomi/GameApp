@@ -1,13 +1,10 @@
-import Controller from './controller';
-
 export default class Player {
-    constructor(scene) {
+    constructor(controller) {
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
         this.angle = 180.0;
         this.target = new THREE.Vector3(0, 2.0, 1.0);
-        this.controller = new Controller();
+        this.controller = controller;
         this.controller.handleKeyInput();
-        scene.add(this.camera);
     }
 
     update() {
