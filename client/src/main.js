@@ -18,6 +18,9 @@ class GameApp {
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.setClearColor(0x888888, 1.0);
         document.body.appendChild( this.renderer.domElement );
+        this.renderer.domElement.addEventListener('click', () => {
+            this.renderer.domElement.requestPointerLock();
+        });
 
         this.stage.init(this.scene);
 
@@ -25,6 +28,7 @@ class GameApp {
         const directionalLight = new THREE.DirectionalLight(0xffffff);
         directionalLight.position.set(25, 1000, 25);
         this.scene.add(directionalLight);
+
         // スポットライト光源を作成
         // new THREE.SpotLight(色, 光の強さ, 距離, 角度, ボケ具合, 減衰率)
         const spotLight = new THREE.SpotLight(0xffffff, 2, 40, Math.PI / 2, 1, 0.5);
@@ -86,7 +90,6 @@ class GameApp {
     }
 
     render() {
-        this.player.update();
         this.renderer.render( this.scene, this.player.camera );
     }
 }
@@ -100,6 +103,8 @@ function main() {
     loop();
 
     function loop() {
+        app.player.prevPos = Object.assign({}, app.player.camera.position);
+        app.player.update();
         if (JSON.stringify(app.player.camera.position) != JSON.stringify(app.player.prevPos)) {
             app.socket.emit('updatePosition', {
                 id: app.id,
