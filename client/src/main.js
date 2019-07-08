@@ -1,16 +1,15 @@
-const MAX = 50;
+import Stage from './stage';
+import Player from './player';
+import Cube from './cube';
+import Controller from './controller';
 
 class GameApp {
-    constructor(controller) {
+    constructor(player) {
         this.scene = new THREE.Scene();
-        this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+        this.stage = new Stage();
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
-
-        this.controller = controller;
-
         this.socket = io('/', {path: '/ws/socket.io'});
-        
-        this.cubes = [];
+        this.player = player;
         this.players = new Map();
         this.id = Math.floor(Math.random() * 10000);
     }
@@ -20,16 +19,8 @@ class GameApp {
         this.renderer.setClearColor(0x888888, 1.0);
         document.body.appendChild( this.renderer.domElement );
 
-        for (let x = 0; x < MAX; ++x) {
-            for (let z = 0; z < MAX; ++z) {
-                this.cubes.push( new Cube() );
-                this.cubes[this.cubes.length - 1].mesh.position.x = x * 1.2;
-                this.cubes[this.cubes.length - 1].mesh.position.y = 0.0;
-                this.cubes[this.cubes.length - 1].mesh.position.z = z * 1.2;
-                // 3D空間にメッシュを追加
-                this.scene.add( this.cubes[this.cubes.length - 1].mesh );
-            }
-        }
+        this.stage.init(this.scene);
+
         // 平行光源
         const directionalLight = new THREE.DirectionalLight(0xffffff);
         directionalLight.position.set(25, 1000, 25);
@@ -40,13 +31,13 @@ class GameApp {
         spotLight.position.set( 25.0, 35.0, 25.0 );
         this.scene.add(spotLight);
 
-        this.camera.position.set(50.0, 2.0, 50.0);
+        this.player.camera.position.set(50.0, 2.0, 50.0);
     }
 
     connect() {
         this.socket.emit('connected', {
             id: this.id,
-            position: this.camera.position
+            position: this.player.camera.position
         });
         
         this.socket.on('disconnect', () => {});
@@ -95,69 +86,24 @@ class GameApp {
     }
 
     render() {
-        this.renderer.render( this.scene, this.camera );
+        this.player.update();
+        this.renderer.render( this.scene, this.player.camera );
     }
 }
-
-class Controller {
-    constructor() {
-        this.moveKeys = new Map([[37, false], [38, false], [39, false], [40, false]]);
-    }
-
-    handleKeyInput() {
-        document.addEventListener('keydown', e => {
-            e.preventDefault();
-            if (this.moveKeys.has(e.keyCode) && !this.moveKeys.get(e.keyCode)) {
-                this.moveKeys.set(e.keyCode, true);
-            }
-        });
-        document.addEventListener('keyup', e => {
-            e.preventDefault();
-            if (this.moveKeys.has(e.keyCode) && this.moveKeys.get(e.keyCode)) {
-                this.moveKeys.set(e.keyCode, false);
-            }
-        });
-    }
-}
-
-class Cube {
-    constructor() {
-        this.geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        this.material = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
-        this.mesh = new THREE.Mesh(this.geometry, this.material);
-    }
-}
-
 
 function main() {
-    const controller = new Controller;
-    const app = new GameApp(controller);
+    const app = new GameApp(new Player(new Controller));
     app.init();
+    app.scene.add(app.player.camera);
     app.connect();
-    app.controller.handleKeyInput();
 
     loop();
 
     function loop() {
-        let prevPos = Object.assign({}, app.camera.position);
-
-        if (app.controller.moveKeys.get(37)) { // Left
-            app.camera.position.x -= 0.1;
-        }
-        if (app.controller.moveKeys.get(39)) { // Right
-            app.camera.position.x += 0.1;
-        }
-        if (app.controller.moveKeys.get(38)) { // Forward
-            app.camera.position.z -= 0.1;
-        }
-        if (app.controller.moveKeys.get(40)) { // Back
-            app.camera.position.z += 0.1;
-        }
-
-        if (JSON.stringify(app.camera.position) != JSON.stringify(prevPos)) {
+        if (JSON.stringify(app.player.camera.position) != JSON.stringify(app.player.prevPos)) {
             app.socket.emit('updatePosition', {
                 id: app.id,
-                position: app.camera.position
+                position: app.player.camera.position
             })
         };
 
