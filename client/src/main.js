@@ -128,7 +128,8 @@ class Cube {
     }
 }
 
-
+var angle = 0.0;
+var target = new THREE.Vector3(0, 2.0, 1.0);
 function main() {
     const controller = new Controller;
     const app = new GameApp(controller);
@@ -141,19 +142,25 @@ function main() {
     function loop() {
         let prevPos = Object.assign({}, app.camera.position);
 
+        target.x = Math.cos(Math.PI * angle / 180.0) + app.camera.position.x;
+        target.z = Math.sin(Math.PI * angle / 180.0) + app.camera.position.z;
+
         if (app.controller.moveKeys.get(37)) { // Left
-            app.camera.position.x -= 0.1;
+            angle -= 1.0;
         }
         if (app.controller.moveKeys.get(39)) { // Right
-            app.camera.position.x += 0.1;
+            angle += 1.0;
         }
         if (app.controller.moveKeys.get(38)) { // Forward
-            app.camera.position.z -= 0.1;
+            app.camera.position.x += (target.x - app.camera.position.x) / 10.0;
+            app.camera.position.z += (target.z - app.camera.position.z) / 10.0;
         }
         if (app.controller.moveKeys.get(40)) { // Back
-            app.camera.position.z += 0.1;
+            app.camera.position.x -= (target.x - app.camera.position.x) / 10.0;
+            app.camera.position.z -= (target.z - app.camera.position.z) / 10.0;
         }
-
+        app.camera.lookAt(target);
+        
         if (JSON.stringify(app.camera.position) != JSON.stringify(prevPos)) {
             app.socket.emit('updatePosition', {
                 id: app.id,
