@@ -9,6 +9,7 @@ class GameApp {
         this.stage = new Stage();
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.socket = io('/', {path: '/ws/socket.io'});
+        this.connected = false;
         this.player = player;
         this.players = new Map();
         this.id = Math.floor(Math.random() * 10000);
@@ -55,6 +56,7 @@ class GameApp {
                 }).forEach(user => {
                     this.addUser(user);
                 }) 
+                this.connected = true;
             }
         });
 
@@ -69,7 +71,7 @@ class GameApp {
         });
 
         this.socket.on('updatePosition', data => {
-            if (data.clientID !== this.id) {
+            if (data.clientID !== this.id && this.connected) {
                 this.updatePosition(data);
             }
         });
