@@ -4,7 +4,8 @@ export default class Controller {
     constructor() {
         this.moveKeys = new Map([
             [37, false], [38, false], [39, false], [40, false], // Left, Up, Right, Down
-            [87, false], [65, false], [83, false], [68, false]  // W, A, S, D 
+            [87, false], [65, false], [83, false], [68, false],  // W, A, S, D
+            [32, false] // Jump
         ]);
     }
 
