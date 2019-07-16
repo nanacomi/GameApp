@@ -102,7 +102,7 @@ class GameApp {
 
 class Controller {
     constructor() {
-        this.moveKeys = new Map([[37, false], [38, false], [39, false], [40, false], [83, false]]);
+        this.moveKeys = new Map([[37, false], [38, false], [39, false], [40, false], [83, false], [32, false]]);
     }
 
     handleKeyInput() {
