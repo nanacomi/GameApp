@@ -9,6 +9,7 @@ class GameApp {
         this.stage = new Stage();
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.socket = io('/', {path: '/ws/socket.io'});
+        this.connected = false;
         this.player = player;
         this.players = new Map();
         this.id = Math.floor(Math.random() * 10000);
@@ -40,19 +41,22 @@ class GameApp {
 
     connect() {
         this.socket.emit('connected', {
-            id: this.id,
+            clientID: this.id,
             position: this.player.camera.position
         });
         
         this.socket.on('disconnect', () => {});
 
         this.socket.on('connected', data => {
-            if (data.newUser.id !== this.id) {
+            if (data.newUser.clientID !== this.id) {
                 this.addUser(data.newUser);
             } else {
-                data.currentUsers.forEach(user => {
+                data.currentUsers.filter(user => {
+                    return !this.players.has(user.clientID);
+                }).forEach(user => {
                     this.addUser(user);
                 }) 
+                this.connected = true;
             }
         });
 
@@ -67,7 +71,7 @@ class GameApp {
         });
 
         this.socket.on('updatePosition', data => {
-            if (data.id !== this.id) {
+            if (data.clientID !== this.id && this.connected) {
                 this.updatePosition(data);
             }
         });
@@ -79,11 +83,11 @@ class GameApp {
         player.mesh.position.y = data.position.y;
         player.mesh.position.z = data.position.z;
         this.scene.add(player.mesh);
-        this.players.set(data.id, player);
+        this.players.set(data.clientID, player);
     }
 
     updatePosition(data) {
-        let target = this.players.get(data.id);
+        let target = this.players.get(data.clientID);
         target.mesh.position.x = data.position.x;
         target.mesh.position.y = data.position.y;
         target.mesh.position.z = data.position.z;
@@ -107,9 +111,9 @@ function main() {
         app.player.update();
         if (JSON.stringify(app.player.camera.position) != JSON.stringify(app.player.prevPos)) {
             app.socket.emit('updatePosition', {
-                id: app.id,
+                clientID: app.id,
                 position: app.player.camera.position
-            })
+            });
         };
 
         app.render();
