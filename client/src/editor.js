@@ -1,5 +1,16 @@
 const MAX = 50;
 
+import { EffectComposer } from './jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from './jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from './jsm/postprocessing/UnrealBloomPass.js';
+
+var params = {
+    exposure: 1,
+    bloomStrength: 0.5,
+    bloomThreshold: 0,
+    bloomRadius: 0
+};
+
 
 class GameApp {
     constructor(controller) {
@@ -18,7 +29,7 @@ class GameApp {
 
     init() {
         this.renderer.setSize( window.innerWidth, window.innerHeight );
-        this.renderer.setClearColor(0x888888, 1.0);
+        this.renderer.setClearColor(0x555555, 1.0);
         document.body.appendChild( this.renderer.domElement );
 
         for (let x = 0; x < MAX; ++x) {
@@ -31,15 +42,41 @@ class GameApp {
                 this.scene.add( this.cubes[this.cubes.length - 1].mesh );
             }
         }
+        let f = 0x888888;
         // 平行光源
-        this.directionalLight = new THREE.DirectionalLight(0xffffff);
+        this.directionalLight = new THREE.DirectionalLight(f);
         this.directionalLight.position.set(25, 1000, 25);
         this.scene.add(this.directionalLight);
+        this.directionalLight1 = new THREE.DirectionalLight(f);
+        this.directionalLight1.position.set(-2500, 100, 2500);
+        this.scene.add(this.directionalLight1);
+        this.directionalLight2 = new THREE.DirectionalLight(f);
+        this.directionalLight2.position.set(2500, 100, -2500);
+        this.scene.add(this.directionalLight2);
+        this.directionalLight3 = new THREE.DirectionalLight(f);
+        this.directionalLight3.position.set(2500, 100, 2500);
+        this.scene.add(this.directionalLight3);
+        this.directionalLight4 = new THREE.DirectionalLight(f);
+        this.directionalLight4.position.set(-2500, 100, -2500);
+        this.scene.add(this.directionalLight4);
         // スポットライト光源を作成
         // new THREE.SpotLight(色, 光の強さ, 距離, 角度, ボケ具合, 減衰率)
-        this.spotLight = new THREE.SpotLight(0xffffff, 2, 40, Math.PI / 2, 1, 0.5);
+        this.spotLight = new THREE.SpotLight(0xffffff, 1, 40, Math.PI / 2, 1, 0.5);
         this.spotLight.position.set( 25.0, 35.0, 25.0 );
         this.scene.add(this.spotLight);
+
+        this.renderScene = new RenderPass( this.scene, this.camera );
+
+        this.bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+        this.bloomPass.threshold = params.bloomThreshold;
+        this.bloomPass.strength = params.bloomStrength;
+        this.bloomPass.radius = params.bloomRadius;
+
+        this.composer = new EffectComposer( this.renderer );
+        this.composer.addPass( this.renderScene );
+        this.composer.addPass( this.bloomPass );
+
+
 
         this.camera.position.set(50.0, 2.0, 50.0);
     }
@@ -96,7 +133,7 @@ class GameApp {
     }
 
     render() {
-        this.renderer.render( this.scene, this.camera );
+        this.composer.render();
     }
 }
 
@@ -124,8 +161,72 @@ class Controller {
 class Cube {
     constructor() {
         this.geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        this.material = new THREE.MeshLambertMaterial({ color: 0xaaaaaa });
-        this.mesh = new THREE.Mesh(this.geometry, this.material);
+        let ffffff = '#';
+
+        let majorColor = 6;
+
+        for (let l = 0; l < 6; ++l) {
+            const hex = Math.floor(Math.random() * 15) + 1;
+            let f1 = hex;
+            if (hex == 15) {f1 = 'f';}
+            if (hex == 14) {f1 = 'e';}
+            if (hex == 13) {f1 = 'd';}
+            if (hex == 12) {f1 = 'c';}
+            if (hex == 11) {f1 = 'b';}
+            if (hex == 10) {f1 = 'a';}
+
+
+            if (majorColor == 0) {
+                if (l >= 2) {
+                    ffffff += '0';
+                } else {
+                    ffffff += f1 + '';
+                }
+            }
+            if (majorColor == 1) {
+                if (l >= 2 && l < 4) {
+                    ffffff += f1 + '';
+                } else {
+                    ffffff += '0';
+                }    
+            }
+            if (majorColor == 2) {
+                if (l < 4) {
+                    ffffff += '0';
+                } else {
+                    ffffff += f1 + '';
+                }    
+            }
+            if (majorColor == 3) {
+                if (l >= 4) {//黄色
+                    ffffff += '0';
+                } else {
+                    ffffff += f1 + '';
+                }    
+            }
+            if (majorColor == 4) {
+                if (l < 2) {//水色
+                    ffffff += '0';
+                } else {
+                    ffffff += f1 + '';
+                }    
+            }
+            if (majorColor == 5) {
+                if (l >= 2 && l < 4) {//紫色
+                    ffffff += '0';
+                } else {
+                    ffffff += f1 + '';
+                }    
+            }
+            if (majorColor == 6) {
+                ffffff += f1 + '';
+            }
+        }
+
+        let color = new THREE.Color( ffffff );
+//        color.setHex( Math.random() );
+
+        this.material = new THREE.MeshLambertMaterial({ color: color });        this.mesh = new THREE.Mesh(this.geometry, this.material);
     }
 }
 
